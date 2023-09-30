@@ -1,0 +1,203 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import math
+import numpy as np
+df= pd.read_excel("/content/Dataset 2.xlsx")
+
+print(df.describe())
+
+df.info()
+
+#plotting histogram
+plt.hist(df['No. of FIC'])
+plt.show()
+
+#mean
+A=df["No. of FIC"].mean()
+print(A)
+
+#mean
+B=df["Annual Service need"].mean()
+print(B)
+
+#median
+df["No. of FIC"].median()
+
+#mode
+df["No. of FIC"].mode()
+
+#standard deviation
+s1=df['No. of FIC'].std()
+print(s1)
+
+#standard deviation
+s2=df["Annual Service need"].std()
+print(s2)
+
+#occurence
+df['No. of FIC'].value_counts().to_frame().T
+
+#storing the contents of column No. of FIC in a list
+L1=list(df["No. of FIC"])
+#storing the contents of column Annual Service needs in a list
+L2=list(df["Annual Service need"])
+
+#printing each of element of list
+for i in range(len(L2)):
+  print(int(L2[i]))
+
+#printing each of element of list
+for i in range(len(L2)):
+  print(int(L2[i]))
+
+#defining a function for correlation
+def p_correlation(L1,L2):
+  if len(L1)!=len(L2):
+    print("the lists should have same length")
+
+  n=len(L1)
+
+
+  numerator=sum(int((int(L1[i])-A)*(int(L2[i])-B)) for i in range(n))
+  denominator= (n-1)*s1*s2
+
+  correlation_coeff= numerator/denominator
+  return  correlation_coeff
+
+x=L1
+y=L2
+C=p_correlation(L1,L2)
+print("Pearson Correlation Coefficient:",C)
+
+#plotting normal distribution curve
+import scipy.stats as stats
+x=np.linspace(A-3*s1,A+3*s1,100)
+plt.plot(x,stats.norm.pdf(x,A,s1))
+plt.show()
+
+def Normal_distribution(u):
+  f=((1/(s1*(2*math.pi)**1/2)))*(math.e**((-1/2)*(((u-A)/6)**2)))
+  return f
+
+for i in L1:
+  print(Normal_distribution(i))
+
+#taking two columns for min- max normalisation
+data= {'No of FIC': L1,
+       'Annual Service need':L2}
+df=pd.DataFrame(data)
+print(df)
+
+from sklearn.preprocessing import MinMaxScaler
+sc= MinMaxScaler()
+norm_data= sc.fit_transform(df)
+print(norm_data)
+
+#without using built in module
+L3=[]
+def min_max(L1,L3):
+  for i in L1:
+    m=min(L1)
+    M=max(L1)
+    n=(i-m)/(M-m)
+    L3.append(n)
+
+min_max(L1,L3)
+print(L3)
+
+#beyes thm
+c1=0
+for i in L1:
+  if i>500:
+    c1+=1
+Ph=c1/len(L1) #finding probablity of hypothesis
+print("probablity of No. of fic greater than 500",Ph)
+
+
+c2=0
+for i in L2:
+  if i>2500:
+    c2+=1
+
+PD=c2/len(L2) #finding the probablity of given data
+print("probablity of Annula service need greater than 2500",PD)
+
+
+c3=0
+for i in L1:
+  if i>500:
+    for j in L2:
+      if j>2500:
+        c3+=1
+        break
+
+PDh=c3/len(L1) #finding probablity of data when hypothesis has happened
+print("probablity of Annual service need greater than 2500 when No. of fic greater than 500",PDh)
+
+#finding probability of hypothesis when data has happened
+def con_prob(a,b,c):
+  P=(a*b)/c
+  return P
+
+X=con_prob(PDh,Ph,PD)
+print("the probablity of No. of FIC be greater than 500 when Annual service need is greater than 2500 is",X)
+
+#Student t-test independent
+se1= s1/len(L1)
+print(se1)
+se2= s2/len(L2)
+print(se2)
+sed=math.sqrt(se1**2+se2**2)
+print(sed)
+t=(A-B)/sed
+print(t)
+
+#Student t test dependent
+n=len(L1)
+print(n)
+
+
+
+d1=sum(((L1[i]-L2[i])**2) for i in range(n))
+d2=sum((L1[j]-L2[j] for j in range(n)))
+sd=math.sqrt((d1-(d2**2/n))/(n-1))
+sed=sd/math.sqrt(n)
+t=(A-B)/sed
+print(t)
+print(sd)
+print(d1)
+print(d2)
+
+#using predefined modules
+from scipy.stats import ttest_rel
+ttest_rel(df["Annual Service need"], df["No. of FIC"], nan_policy="omit")
+
+#scatter plot
+plt.scatter(df["Annual Service need"], df["No. of FIC"])
+plt.show
+
+#bar plot
+sns.barplot(x = 'Annual Service need',y = 'No. of FIC',data = df)
+plt.show()
+
+#linear regression
+import matplotlib.pyplot as plt
+from scipy import stats
+
+x=L1
+y=L2
+
+slope, intercept, r, p, std_err= stats.linregress(x,y)
+
+def myfunc(x):
+  return slope*x + intercept
+
+mymodel=list(map(myfunc,x))
+plt.scatter(x,y)
+plt.plot(x,mymodel)
+plt.show()
+
+#predicting value using regression
+service=myfunc(900)
+print(service)
